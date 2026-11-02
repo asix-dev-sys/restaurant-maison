@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import BookingWizard from "./components/booking/BookingWizard";
 import UserDashboard from "./components/dashboard/UserDashboard";
@@ -10,7 +10,7 @@ function Home() {
         RESTAURANT MAISON
       </h1>
       <p className="text-gray-600 mb-8 max-w-md mx-auto">
-        Добро пожаловать в модуль бронирования столов и личного кабинета.
+        Добро пожаловать в модуль бронирования столов.
       </p>
       <Link
         to="/booking"
@@ -23,10 +23,16 @@ function Home() {
 }
 
 export default function App() {
+  const [bookings, setBookings] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+
+  const addBooking = (newBooking) => {
+    setBookings((prev) => [{ id: Date.now(), ...newBooking }, ...prev]);
+  };
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-        {/* Шапка сайта */}
         <header className="bg-white shadow-sm px-8 py-4 flex justify-between items-center sticky top-0 z-50">
           <Link
             to="/"
@@ -42,17 +48,29 @@ export default function App() {
               Бронирование
             </Link>
             <Link to="/dashboard" className="hover:text-amber-600 transition">
-              Личный кабинет
+              Личный кабинет{" "}
+              {bookings.length > 0 && (
+                <span className="ml-1 px-2 py-0.5 text-xs bg-amber-100 text-amber-800 rounded-full">
+                  {bookings.length}
+                </span>
+              )}
             </Link>
           </nav>
         </header>
 
-        {/* Основной контент */}
         <main className="py-10">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/booking" element={<BookingWizard />} />
-            <Route path="/dashboard" element={<UserDashboard />} />
+            <Route
+              path="/booking"
+              element={<BookingWizard onAddBooking={addBooking} />}
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <UserDashboard bookings={bookings} favorites={favorites} />
+              }
+            />
           </Routes>
         </main>
       </div>
