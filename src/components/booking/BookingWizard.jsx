@@ -21,7 +21,7 @@ export default function BookingWizard() {
 
   return (
     <div className="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-md border border-gray-100">
-      {/* Прогресс-бар шагов */}
+    
       <div className="flex justify-between mb-8 text-xs font-semibold uppercase tracking-wider text-gray-400 border-b pb-4">
         <span className={step === 1 ? "text-amber-600" : ""}>1. Время</span>
         <span className={step === 2 ? "text-amber-600" : ""}>2. Столик</span>
@@ -29,7 +29,7 @@ export default function BookingWizard() {
         <span className={step === 4 ? "text-amber-600" : ""}>4. Готово</span>
       </div>
 
-      {/* Рендеринг текущего шага */}
+       
       {step === 1 && (
         <StepDateTime
           data={bookingData}
