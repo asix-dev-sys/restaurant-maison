@@ -27,7 +27,6 @@ export default function BookingWizard() {
         <span className={step === 3 ? "text-amber-600" : ""}>3. Пожелания</span>
         <span className={step === 4 ? "text-amber-600" : ""}>4. Готово</span>
       </div>
-
       {step === 1 && (
         <StepDateTime
           data={bookingData}
