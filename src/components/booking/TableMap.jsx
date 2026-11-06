@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-// Список столов — все изначально свободны. Занятость определяется динамически по броням!
 const TABLES = [
   { id: "t1", number: "Т1", zone: "terrace", seats: 2, label: "У окна" },
   { id: "t2", number: "Т2", zone: "terrace", seats: 4, label: "У окна" },
@@ -15,14 +14,11 @@ export default function TableMap({ data, setData, onNext, onPrev }) {
   const [selectedZone, setSelectedZone] = useState("all");
   const [bookedTableIds, setBookedTableIds] = useState([]);
 
-  // При загрузке шага проверяем, какие столы уже заняты на выбранную дату и время
   useEffect(() => {
-    // Получаем все существующие брони из localStorage (или вашей базы)
     const savedBookings = JSON.parse(
       localStorage.getItem("restaurant_bookings") || "[]",
     );
 
-    // Фильтруем брони, которые совпадают с выбранной датой и временем
     const occupied = savedBookings
       .filter((b) => b.date === data.date && b.time === data.time)
       .map((b) => b.tableId);

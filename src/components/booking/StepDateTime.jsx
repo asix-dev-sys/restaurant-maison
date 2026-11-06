@@ -26,7 +26,6 @@ export default function StepDateTime({ data, setData, onNext }) {
           />
         </div>
 
-        {/* Соединенный вариант: нативный элемент времени, куда можно и кликнуть для выбора, и ввести цифры руками */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Время
