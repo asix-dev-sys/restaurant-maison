@@ -16,8 +16,71 @@ export default function BookingWizard() {
     wishes: "",
   });
 
-  const nextStep = () => setStep((prev) => prev + 1);
+  const nextStep = () => {
+    if (step === 3) {
+      saveBookingAndSendToBackend(bookingData);
+    }
+    setStep((prev) => prev + 1);
+  };
+
   const prevStep = () => setStep((prev) => prev - 1);
+
+  const saveBookingAndSendToBackend = async (newBooking) => {
+    try {
+      const existingBookings = JSON.parse(
+        localStorage.getItem("maison_bookings") || "[]",
+      );
+
+      const bookingItem = {
+        id: Date.now(),
+        date: newBooking.date || "Сегодня",
+        time: newBooking.time || "19:00",
+        guests: newBooking.guests || 2,
+        zone: newBooking.zone || "Основной зал",
+        tableId: newBooking.tableId || 1,
+        status: "Активно",
+        createdAt: new Date().toISOString(),
+      };
+
+      const updated = [bookingItem, ...existingBookings];
+      localStorage.setItem("maison_bookings", JSON.stringify(updated));
+    } catch (error) {
+      console.error("Ошибка при сохранении в localStorage:", error);
+    }
+
+    try {
+      const token = localStorage.getItem("token"); // Берем токен, если пользователь авторизован
+
+      const response = await fetch(
+        "https://maison-restaurant.duckdns.org/api/v1/bookings/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            date: newBooking.date,
+            time: newBooking.time,
+            guests: Number(newBooking.guests),
+            table_id: newBooking.tableId,
+            zone: newBooking.zone,
+            comment:
+              `${newBooking.wishes || ""} ${newBooking.allergies || ""}`.trim(),
+          }),
+        },
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Бронь успешно отправлена на бэкенд:", result);
+      } else {
+        console.warn("Сервер вернул ошибку, но локальная бронь сохранена.");
+      }
+    } catch (error) {
+      console.error("Не удалось подключиться к бэкенду:", error);
+    }
+  };
 
   return (
     <div className="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-md border border-gray-100">

@@ -13,35 +13,72 @@ export default function StepDateTime({ data, setData, onNext }) {
       <h3 className="text-xl font-semibold mb-6">Шаг 1: Дата, время и гости</h3>
 
       <div className="space-y-4 mb-8">
+        {/* Поле даты: пишется цифрами руками или выбирается через календарь */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Дата
           </label>
-          <input
-            type="date"
-            name="date"
-            value={data.date}
-            onChange={handleChange}
-            className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-amber-500 outline-none bg-white"
-          />
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              name="date"
+              placeholder="ДД.ММ.ГГГГ"
+              value={data.date}
+              onChange={handleChange}
+              className="w-full p-3 pr-10 border rounded-xl focus:ring-2 focus:ring-amber-500 outline-none bg-white"
+            />
+            {/* Поверх ставим прозрачный инпут даты, чтобы по клику на иконку открывался календарь */}
+            <input
+              type="date"
+              name="date"
+              value={data.date}
+              onChange={handleChange}
+              className="absolute right-3 opacity-0 w-8 h-8 cursor-pointer"
+              title="Открыть календарь"
+            />
+            <span className="absolute right-3 text-gray-400 pointer-events-none text-lg">
+              📅
+            </span>
+          </div>
+          <span className="text-xs text-gray-400 mt-1 block">
+            Введите дату вручную (например: 05.11.2026) или выберите из
+            календаря
+          </span>
         </div>
 
+        {/* Поле времени: пишется цифрами руками или выбирается через часы */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Время
           </label>
-          <input
-            type="time"
-            name="time"
-            value={data.time}
-            onChange={handleChange}
-            className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-amber-500 outline-none bg-white"
-          />
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              name="time"
+              placeholder="Например: 19:30"
+              value={data.time}
+              onChange={handleChange}
+              className="w-full p-3 pr-10 border rounded-xl focus:ring-2 focus:ring-amber-500 outline-none bg-white"
+            />
+            {/* Поверх ставим прозрачный инпут времени для вызова нативного виджета */}
+            <input
+              type="time"
+              name="time"
+              value={data.time}
+              onChange={handleChange}
+              className="absolute right-3 opacity-0 w-8 h-8 cursor-pointer"
+              title="Выбрать время"
+            />
+            <span className="absolute right-3 text-gray-400 pointer-events-none text-lg">
+              🕒
+            </span>
+          </div>
           <span className="text-xs text-gray-400 mt-1 block">
-            Выберите из меню или введите цифры с клавиатуры
+            Введите время вручную (например: 18:30) или выберите из меню
           </span>
         </div>
 
+        {/* Количество гостей */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Количество гостей

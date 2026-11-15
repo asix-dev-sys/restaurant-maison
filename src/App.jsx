@@ -1,7 +1,14 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import BookingWizard from "./components/booking/BookingWizard";
-import UserDashboard from "./components/dashboard/UserDashboard";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  Navigate,
+} from "react-router-dom";
+import PublicBooking from "./components/booking/PublicBooking";
+import StaffLogin from "./components/StaffLogin";
+import api from "./services/api";
 
 // Полноценная Главная страница (Landing Page)
 function Home() {
@@ -230,17 +237,67 @@ function Home() {
   );
 }
 
-export default function App() {
-  const [bookings, setBookings] = useState([]);
-  const [favorites, setFavorites] = useState([]);
+// Защищенный компонент панели управления для персонала
+function StaffDashboard() {
+  const profile = JSON.parse(localStorage.getItem("staff_profile") || "{}");
 
-  const addBooking = (newBooking) => {
-    setBookings((prev) => [{ id: Date.now(), ...newBooking }, ...prev]);
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("staff_profile");
+    window.location.href = "/staff/login";
   };
 
   return (
+    <div className="min-h-screen bg-[#FDFBF7] p-8 font-sans text-stone-950">
+      <div className="max-w-5xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-stone-100 flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-serif text-stone-900">
+            Панель персонала MAISON
+          </h1>
+          <p className="text-xs uppercase tracking-widest text-stone-400 mt-1">
+            Роль:{" "}
+            <span className="text-amber-700 font-bold">
+              {profile.role || "Сотрудник"}
+            </span>{" "}
+            | {profile.work_email}
+          </p>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs uppercase tracking-widest rounded-xl transition"
+        >
+          Выйти
+        </button>
+      </div>
+
+      <div className="max-w-5xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-stone-100">
+        <h2 className="text-lg font-serif text-stone-900 mb-4">
+          Управление бронированиями и залом
+        </h2>
+        <p className="text-sm text-stone-600">
+          Здесь отображаются все бронирования и интерактивная карта столов
+          ресторана.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// Компонент проверки авторизации
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("access_token");
+  if (!token) {
+    return <Navigate to="/staff/login" replace />;
+  }
+  return children;
+}
+
+export default function App() {
+  return (
     <Router>
       <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+        {/* Шапка сайта */}
         <header className="bg-white shadow-sm px-8 py-4 flex justify-between items-center sticky top-0 z-50">
           <Link
             to="/"
@@ -248,37 +305,38 @@ export default function App() {
           >
             MAISON
           </Link>
-          <nav className="space-x-8 font-medium">
+          <nav className="space-x-8 font-medium text-sm">
             <Link to="/" className="hover:text-amber-600 transition">
               Главная
             </Link>
             <Link to="/booking" className="hover:text-amber-600 transition">
               Бронирование
             </Link>
-            <Link to="/dashboard" className="hover:text-amber-600 transition">
-              Личный кабинет{" "}
-              {bookings.length > 0 && (
-                <span className="ml-1 px-2 py-0.5 text-xs bg-amber-100 text-amber-800 rounded-full">
-                  {bookings.length}
-                </span>
-              )}
+            <Link
+              to="/staff/login"
+              className="hover:text-amber-600 transition text-amber-700"
+            >
+              Вход для персонала
             </Link>
           </nav>
         </header>
 
+        {/* Навигация по страницам */}
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route
-              path="/booking"
-              element={<BookingWizard onAddBooking={addBooking} />}
-            />
+            <Route path="/booking" element={<PublicBooking />} />
+            <Route path="/staff/login" element={<StaffLogin />} />
             <Route
               path="/dashboard"
               element={
-                <UserDashboard bookings={bookings} favorites={favorites} />
+                <ProtectedRoute>
+                  <StaffDashboard />
+                </ProtectedRoute>
               }
             />
+            {/* Редирект для несуществующих путей */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
       </div>
