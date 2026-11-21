@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -7,339 +7,531 @@ import {
   Navigate,
 } from "react-router-dom";
 import PublicBooking from "./components/booking/PublicBooking";
-import StaffLogin from "./components/StaffLogin";
-import api from "./services/api";
+import StaffLogin from "./admin/StaffLogin";
+import AdminOverview from "./admin/AdminOverview";
+import AdminBookings from "./admin/AdminBookings";
+import AdminHallPlan from "./admin/AdminHallPlan";
+import AdminOrders from "./admin/AdminOrders";
+import KitchenQueue from "./admin/KitchenQueue";
 
-// Полноценная Главная страница (Landing Page)
+function getStoredStaffSession() {
+  const token = localStorage.getItem("access_token");
+  let profile = null;
+  try {
+    profile = JSON.parse(localStorage.getItem("staff_profile") || "null");
+  } catch {
+    profile = null;
+  }
+  return { token, profile };
+}
+
+function getDefaultStaffRoute(role) {
+  if (role === "chef") return "/staff/kitchen";
+  if (role === "waiter") return "/admin/orders";
+  return "/admin/dashboard";
+}
+
+function RequireStaffRole({ allowedRoles, children }) {
+  const { token, profile } = getStoredStaffSession();
+  const role = profile?.role;
+
+  if (!token) {
+    return <Navigate to="/staff/login" replace />;
+  }
+
+  if (allowedRoles && role && !allowedRoles.includes(role)) {
+    return <Navigate to={getDefaultStaffRoute(role)} replace />;
+  }
+
+  return children;
+}
+
+function StaffDashboardRedirect() {
+  const { token, profile } = getStoredStaffSession();
+  if (!token) {
+    return <Navigate to="/staff/login" replace />;
+  }
+  return <Navigate to={getDefaultStaffRoute(profile?.role)} replace />;
+}
+
 function Home() {
   return (
-    <div className="min-h-screen bg-white text-gray-800">
-      {/* 1. Hero-баннер (Главный рекламный блок) */}
-      <section className="relative h-[85vh] flex items-center justify-center bg-gray-900 text-white">
-        <div className="absolute inset-0 overflow-hidden">
+    <div className="min-h-screen bg-[#F7F5F0] text-[#1A1A1A] font-sans selection:bg-[#C5A880] selection:text-white">
+      <section className="relative min-h-screen flex flex-col justify-between text-white px-8 md:px-16 py-8 overflow-hidden bg-[#121614]">
+        <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=1920"
-            alt="Restaurant Interior"
+            alt="Ресторан Maison"
             className="w-full h-full object-cover opacity-40 scale-105"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#121614] via-[#121614]/60 to-[#121614]/40" />
         </div>
-        <div className="relative z-10 text-center max-w-3xl px-6">
-          <span className="text-amber-400 uppercase tracking-widest text-sm font-semibold mb-4 block">
-            Авторская кухня & Атмосфера
-          </span>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-            Искусство гастрономии в каждом блюде
-          </h1>
-          <p className="text-gray-300 text-lg mb-8">
-            Погрузитесь в незабываемую атмосферу уюта и изысканных вкусов от
-            нашего шеф-повара.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/booking">
-              <button className="px-8 py-4 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-xl transition shadow-sm w-full sm:w-auto">
-                Забронировать стол
-              </button>
+
+        <div className="relative z-10 max-w-7xl mx-auto w-full flex justify-between items-center">
+          <div className="flex flex-col items-start">
+            <span
+              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+              className="text-2xl md:text-[26px] tracking-[0.2em] leading-none font-normal"
+            >
+              MAISON
+            </span>
+            <span className="text-[8px] uppercase tracking-[0.38em] text-[#C5A880] mt-1">
+              RESTAURANT
+            </span>
+          </div>
+
+          <nav className="hidden md:flex items-center space-x-10 text-xs tracking-[0.12em] text-[#E0DCD0] font-medium">
+            <a href="#" className="hover:text-white transition">
+              Главная
+            </a>
+            <a href="#menu-preview" className="hover:text-white transition">
+              Меню
+            </a>
+            <a href="#about" className="hover:text-white transition">
+              О ресторане
+            </a>
+            <a href="#contacts" className="hover:text-white transition">
+              Контакты
+            </a>
+            <Link
+              to="/staff/login"
+              className="text-[#C5A880] hover:text-white transition"
+            >
+              Персонал
             </Link>
+          </nav>
+
+          <div className="flex items-center gap-4">
+            <Link
+              to="/booking"
+              className="group px-6 py-3 bg-[#C5A880] hover:bg-[#b0936b] text-[#121614] text-xs uppercase tracking-[0.12em] transition-all duration-300 inline-flex items-center gap-2 font-medium"
+            >
+              <span>Забронировать</span>
+              <span className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+                ↗
+              </span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto w-full my-auto py-16">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="w-8 h-[1px] bg-[#C5A880]" />
+            <span className="text-[#C5A880] uppercase tracking-[0.25em] text-[11px] font-medium">
+              Ресторан авторской кухни
+            </span>
+          </div>
+
+          <h1
+            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+            className="text-5xl sm:text-6xl md:text-[76px] font-normal leading-[1.08] text-white mb-6 max-w-4xl"
+          >
+            Искусство вкуса{" "}
+            <span className="italic font-normal text-[#D4C3A3]">
+              в каждой детали
+            </span>
+          </h1>
+
+          <p className="text-[#C2BCB0] font-light text-base md:text-lg max-w-lg mb-10 leading-relaxed">
+            Место, где время замедляется, а каждый ужин становится особенным.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <a
+              href="#menu-preview"
+              className="px-7 py-4 bg-[#C5A880] hover:bg-[#b0936b] text-[#121614] text-xs uppercase tracking-[0.2em] font-medium transition inline-flex items-center gap-2"
+            >
+              <span>Наше меню</span>
+              <span>↗</span>
+            </a>
+            <Link
+              to="/booking"
+              className="px-7 py-4 border border-white/30 hover:border-white text-white text-xs uppercase tracking-[0.2em] font-medium transition inline-flex items-center gap-2"
+            >
+              <span>Забронировать стол</span>
+              <span>↗</span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto w-full flex justify-between items-center text-xs text-[#A39E93] tracking-widest">
+          <div className="flex items-center gap-2">
+            <span>ЛИСТАЙТЕ ВНИЗ</span>
+            <span className="animate-bounce">↓</span>
+          </div>
+          <div>ВЕЧЕРА, КОТОРЫЕ ХОЧЕТСЯ ЗАПОМНИТЬ</div>
+          <div>01 / 03</div>
+        </div>
+      </section>
+
+      <section
+        id="menu-preview"
+        className="py-24 px-8 md:px-16 max-w-7xl mx-auto"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-16">
+          <div className="lg:col-span-7">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="w-8 h-[1px] bg-[#C5A880]" />
+              <span className="text-[#8C7A6B] uppercase tracking-[0.25em] text-[11px] font-medium">
+                Добро пожаловать в Maison
+              </span>
+            </div>
+            <h2
+              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+              className="text-5xl md:text-[62px] font-normal leading-[1.08] text-[#1A1A1A] mb-6"
+            >
+              Вкус, который <span className="italic">остаётся с вами.</span>
+            </h2>
+          </div>
+          <div className="lg:col-span-5 pt-4">
+            <p className="text-[#6B655D] font-light text-base leading-relaxed mb-6">
+              MAISON — это пространство для неспешных встреч, красивых моментов
+              и кухни, в которой каждая деталь имеет значение.
+            </p>
             <a
               href="#about"
-              className="px-8 py-4 border-2 border-white text-white rounded-xl font-medium hover:bg-white/10 transition flex items-center justify-center"
+              className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#1A1A1A] hover:text-[#C5A880] transition font-medium"
             >
-              Узнать больше
+              <span>Узнать о нас</span>
+              <span>↗</span>
             </a>
           </div>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="group bg-white border border-[#E6E2D8] shadow-sm flex flex-col">
+            <div className="relative h-72 overflow-hidden bg-[#F0EDE6]">
+              <img
+                src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=800"
+                alt="Филе миньон"
+                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+              />
+              <span className="absolute top-4 left-4 bg-[#1A1A1A] text-white text-[10px] tracking-wider px-3 py-1 uppercase">
+                Хит
+              </span>
+            </div>
+            <div className="p-6 flex flex-col flex-grow justify-between">
+              <div>
+                <div className="flex justify-between items-baseline mb-2">
+                  <h4
+                    style={{
+                      fontFamily: "'Cormorant Garamond', Georgia, serif",
+                    }}
+                    className="text-2xl text-[#1A1A1A]"
+                  >
+                    Филе миньон
+                  </h4>
+                  <span className="text-sm font-semibold">1 890 сом</span>
+                </div>
+                <p className="text-[#7F7A71] text-xs font-light mb-6">
+                  Картофельный гратен, соус из сморчков
+                </p>
+              </div>
+              <Link
+                to="/booking"
+                className="w-full py-3 border border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white text-xs uppercase tracking-[0.15em] transition text-center"
+              >
+                Забронировать стол
+              </Link>
+            </div>
+          </div>
+
+          <div className="group bg-white border border-[#E6E2D8] shadow-sm flex flex-col">
+            <div className="relative h-72 overflow-hidden bg-[#F0EDE6]">
+              <img
+                src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&q=80&w=800"
+                alt="Тартар из говядины"
+                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+              />
+              <span className="absolute top-4 left-4 bg-[#1A1A1A] text-white text-[10px] tracking-wider px-3 py-1 uppercase">
+                Шеф рекомендует
+              </span>
+            </div>
+            <div className="p-6 flex flex-col flex-grow justify-between">
+              <div>
+                <div className="flex justify-between items-baseline mb-2">
+                  <h4
+                    style={{
+                      fontFamily: "'Cormorant Garamond', Georgia, serif",
+                    }}
+                    className="text-2xl text-[#1A1A1A]"
+                  >
+                    Тартар из говядины
+                  </h4>
+                  <span className="text-sm font-semibold">980 сом</span>
+                </div>
+                <p className="text-[#7F7A71] text-xs font-light mb-6">
+                  Каперсы, пармезан, хрустящий бриошь
+                </p>
+              </div>
+              <Link
+                to="/booking"
+                className="w-full py-3 border border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white text-xs uppercase tracking-[0.15em] transition text-center"
+              >
+                Забронировать стол
+              </Link>
+            </div>
+          </div>
+
+          <div className="group bg-white border border-[#E6E2D8] shadow-sm flex flex-col">
+            <div className="relative h-72 overflow-hidden bg-[#F0EDE6]">
+              <img
+                src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&q=80&w=800"
+                alt="Лосось на гриле"
+                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+              />
+            </div>
+            <div className="p-6 flex flex-col flex-grow justify-between">
+              <div>
+                <div className="flex justify-between items-baseline mb-2">
+                  <h4
+                    style={{
+                      fontFamily: "'Cormorant Garamond', Georgia, serif",
+                    }}
+                    className="text-2xl text-[#1A1A1A]"
+                  >
+                    Лосось на гриле
+                  </h4>
+                  <span className="text-sm font-semibold">1 590 сом</span>
+                </div>
+                <p className="text-[#7F7A71] text-xs font-light mb-6">
+                  Крем из сельдерея, сезонная зелень
+                </p>
+              </div>
+              <Link
+                to="/booking"
+                className="w-full py-3 border border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white text-xs uppercase tracking-[0.15em] transition text-center"
+              >
+                Забронировать стол
+              </Link>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* 2. Информационный блок: «О ресторане MAISON» */}
       <section
         id="about"
-        className="py-24 px-6 max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center"
+        className="grid grid-cols-1 lg:grid-cols-2 min-h-[600px] bg-[#141A16]"
       >
-        <div>
-          <span className="text-amber-600 uppercase tracking-wider text-xs font-bold block mb-2">
-            О нас
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Традиции вкуса в современном исполнении
-          </h2>
-          <p className="text-gray-600 mb-4 leading-relaxed">
-            Ресторан MAISON создан для тех, кто ценит безупречное качество
-            продуктов, авторскую подачу и уютную атмосферу. Мы отбираем только
-            лучшие ингредиенты локальных и зарубежных фермерских хозяйств.
-          </p>
-          <p className="text-gray-600 mb-8 leading-relaxed">
-            Наша винная карта насчитывает более 150 редких позиций со всего
-            мира, идеально дополняющих гастрономические шедевры нашего меню.
-          </p>
-          <div className="grid grid-cols-3 gap-6 border-t pt-6">
-            <div>
-              <div className="text-3xl font-bold text-amber-600 mb-1">
-                7 лет
-              </div>
-              <div className="text-xs text-gray-500">Успешной работы</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-amber-600 mb-1">40+</div>
-              <div className="text-xs text-gray-500">Блюд от шефа</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-amber-600 mb-1">150+</div>
-              <div className="text-xs text-gray-500">Видов вин</div>
-            </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="relative min-h-[400px]">
           <img
-            src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&q=80&w=600"
-            alt="Dish"
-            className="rounded-2xl shadow-lg mt-8"
-          />
-          <img
-            src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=600"
-            alt="Interior"
-            className="rounded-2xl shadow-lg"
+            src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&q=80&w=1000"
+            alt="Шеф-повар на кухне"
+            className="w-full h-full object-cover"
           />
         </div>
-      </section>
-
-      {/* 3. Блок: «История & Концепция» */}
-      <section
-        id="history"
-        className="py-24 bg-stone-50 px-6 border-y border-stone-100"
-      >
-        <div className="max-w-4xl mx-auto text-center">
-          <span className="text-amber-600 uppercase tracking-widest text-xs font-bold block mb-3">
-            Наша философия
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-stone-900">
-            История & Концепция
-          </h2>
-          <p className="text-stone-600 text-lg leading-relaxed mb-6">
-            Ресторан MAISON родился из страсти к аутентичным вкусам и
-            современной гастрономической эстетике. Мы верим, что еда — это
-            искусство, способное объединять людей и создавать памятные моменты.
-          </p>
-          <p className="text-stone-500 text-sm leading-relaxed">
-            Каждый элемент интерьера, от дизайнерской мебели до мягкого
-            приглушенного света, пропитан атмосферой уюта, где время замедляет
-            свой ход специально для вас.
-          </p>
-        </div>
-      </section>
-
-      {/* 4. Секция «Шеф-повар & Авторские блюда» */}
-      <section
-        id="chef"
-        className="py-24 px-6 max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center"
-      >
-        <img
-          src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&q=80&w=800"
-          alt="Chef"
-          className="rounded-3xl shadow-xl w-full h-[450px] object-cover"
-        />
-        <div>
-          <span className="text-amber-600 uppercase tracking-wider text-xs font-bold block mb-2">
-            Шеф-повар
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Марк Эллиот</h2>
-          <p className="text-gray-600 mb-6 leading-relaxed">
-            «Кулинария — это не просто смешивание ингредиентов, это создание
-            эмоций. Каждое блюдо в MAISON рассказывает свою историю, объединяя
-            классические французские техники и современные гастрономические
-            тенденции».
-          </p>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-1 bg-amber-600"></div>
-            <span className="font-semibold text-gray-900">
-              Обладатель престижных международных наград
+        <div className="flex flex-col justify-center px-10 lg:px-20 py-20 text-white">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="w-8 h-[1px] bg-[#C5A880]" />
+            <span className="text-[#C5A880] uppercase tracking-[0.25em] text-[11px] font-medium">
+              От нашего шефа
             </span>
           </div>
-        </div>
-      </section>
-
-      {/* 5. Блок: «Галерея интерьера» */}
-      <section id="gallery" className="py-24 bg-gray-50 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-amber-600 uppercase tracking-widest text-xs font-bold block mb-2">
-              Атмосфера
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Галерея интерьера
-            </h2>
-            <p className="text-gray-500">
-              Загляните в наш зал, где продумана каждая деталь для вашего
-              комфорта.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            <img
-              src="https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&q=80&w=800"
-              alt="Interior 1"
-              className="rounded-2xl shadow-md h-72 w-full object-cover hover:scale-[1.02] transition duration-300"
-            />
-            <img
-              src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=800"
-              alt="Interior 2"
-              className="rounded-2xl shadow-md h-72 w-full object-cover hover:scale-[1.02] transition duration-300"
-            />
-            <img
-              src="https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?auto=format&fit=crop&q=80&w=800"
-              alt="Interior 3"
-              className="rounded-2xl shadow-md h-72 w-full object-cover hover:scale-[1.02] transition duration-300"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Интерактивный Футер (Footer) */}
-      <footer id="contacts" className="bg-gray-900 text-white py-16 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+          <h3
+            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+            className="text-4xl md:text-5xl font-normal leading-[1.15] mb-6"
+          >
+            Вдохновение{" "}
+            <span className="italic text-[#D4C3A3]">в каждом блюде.</span>
+          </h3>
+          <p className="text-[#C2BCB0] font-light text-base leading-relaxed mb-8 max-w-lg">
+            Мы верим в силу простых ингредиентов, безупречного мастерства и
+            вкуса, который говорит сам за себя.
+          </p>
           <div>
-            <div className="text-2xl font-bold tracking-wider text-amber-500 mb-4">
+            <Link
+              to="/booking"
+              className="inline-flex items-center gap-3 px-7 py-4 border border-white/30 hover:border-white text-xs uppercase tracking-[0.2em] font-medium transition"
+            >
+              <span>Забронировать стол</span>
+              <span>↗</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <footer
+        id="contacts"
+        className="bg-[#121614] text-white pt-20 pb-12 px-8 md:px-16 border-t border-white/10"
+      >
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+          <div>
+            <h4
+              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+              className="text-2xl tracking-[0.2em] mb-2"
+            >
               MAISON
-            </div>
-            <p className="text-gray-400 text-sm leading-relaxed mb-4">
-              Ресторан высокой авторской кухни в самом сердце города. Идеальное
-              место для ваших романтических вечеров и важных встреч.
+            </h4>
+            <span className="text-[9px] uppercase tracking-[0.3em] text-[#C5A880] block mb-6">
+              RESTAURANT
+            </span>
+            <p className="text-xs text-[#A39E93] font-light">
+              Искусство вкуса в каждой детали.
             </p>
           </div>
+
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-amber-400">
-              Часы работы
-            </h3>
-            <p className="text-gray-400 text-sm mb-2">
-              Понедельник — Четверг: 12:00 — 23:00
-            </p>
-            <p className="text-gray-400 text-sm mb-2">
-              Пятница — Суббота: 12:00 — 01:00
-            </p>
-            <p className="text-gray-400 text-sm">Воскресенье: 12:00 — 23:00</p>
+            <h5 className="text-xs uppercase tracking-[0.2em] text-[#C5A880] mb-4">
+              Навигация
+            </h5>
+            <ul className="space-y-2 text-xs text-[#C2BCB0]">
+              <li>
+                <a href="#" className="hover:text-white transition">
+                  Главная
+                </a>
+              </li>
+              <li>
+                <a href="#menu-preview" className="hover:text-white transition">
+                  Меню
+                </a>
+              </li>
+              <li>
+                <a href="#about" className="hover:text-white transition">
+                  О ресторане
+                </a>
+              </li>
+              <li>
+                <Link
+                  to="/staff/login"
+                  className="text-[#C5A880] hover:text-white transition"
+                >
+                  Панель персонала
+                </Link>
+              </li>
+            </ul>
           </div>
+
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-amber-400">
-              Контакты
-            </h3>
-            <p className="text-gray-400 text-sm mb-2">
-              📍 ул. Гастрономическая, 15
-            </p>
-            <p className="text-gray-400 text-sm mb-2">📞 +996 (555) 123-456</p>
-            <p className="text-gray-400 text-sm">
-              ✉️ reservation@maison.restaurant
-            </p>
+            <h5 className="text-xs uppercase tracking-[0.2em] text-[#C5A880] mb-4">
+              Свяжитесь с нами
+            </h5>
+            <p className="text-xs text-[#C2BCB0] mb-2">Бишкек, Кыргызстан</p>
+            <p className="text-xs text-[#C2BCB0]">Ежедневно - 12:00-23:00</p>
+          </div>
+
+          <div>
+            <h5 className="text-xs uppercase tracking-[0.2em] text-[#C5A880] mb-4">
+              Особенный вечер
+            </h5>
+            <Link
+              to="/booking"
+              className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-white hover:text-[#C5A880] transition font-medium"
+            >
+              <span>Забронировать</span>
+              <span>↗</span>
+            </Link>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto border-t border-gray-800 mt-12 pt-6 text-center text-xs text-gray-500">
-          © 2026 MAISON Restaurant. Все права защищены.
+
+        <div className="max-w-7xl mx-auto pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center text-xs text-[#7A756B]">
+          <div>© 2026 MAISON RESTAURANT</div>
+          <div>Создано с любовью к деталям</div>
         </div>
       </footer>
     </div>
   );
 }
 
-// Защищенный компонент панели управления для персонала
-function StaffDashboard() {
-  const profile = JSON.parse(localStorage.getItem("staff_profile") || "{}");
-
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("staff_profile");
-    window.location.href = "/staff/login";
-  };
-
+function Header() {
   return (
-    <div className="min-h-screen bg-[#FDFBF7] p-8 font-sans text-stone-950">
-      <div className="max-w-5xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-stone-100 flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-serif text-stone-900">
-            Панель персонала MAISON
-          </h1>
-          <p className="text-xs uppercase tracking-widest text-stone-400 mt-1">
-            Роль:{" "}
-            <span className="text-amber-700 font-bold">
-              {profile.role || "Сотрудник"}
-            </span>{" "}
-            | {profile.work_email}
-          </p>
+    <header className="sticky top-0 bg-[#F7F5F0]/90 backdrop-blur-md border-b border-[#E6E2D8] z-50 px-8 md:px-16 py-5">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <Link to="/" className="flex flex-col items-start group">
+          <span
+            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+            className="text-2xl tracking-[0.2em] text-[#1A1A1A] leading-none"
+          >
+            MAISON
+          </span>
+          <span className="text-[8px] uppercase tracking-[0.38em] text-[#8C7A6B] mt-1">
+            RESTAURANT
+          </span>
+        </Link>
+        <div className="flex items-center gap-6">
+          <Link
+            to="/staff/login"
+            className="text-xs uppercase tracking-[0.12em] text-[#8C7A6B] hover:text-[#1A1A1A] transition"
+          >
+            Персонал
+          </Link>
+          <Link
+            to="/booking"
+            className="px-6 py-3 bg-[#1A1A1A] hover:bg-[#333] text-white text-xs uppercase tracking-[0.12em] transition"
+          >
+            Забронировать ↗
+          </Link>
         </div>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs uppercase tracking-widest rounded-xl transition"
-        >
-          Выйти
-        </button>
       </div>
-
-      <div className="max-w-5xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-stone-100">
-        <h2 className="text-lg font-serif text-stone-900 mb-4">
-          Управление бронированиями и залом
-        </h2>
-        <p className="text-sm text-stone-600">
-          Здесь отображаются все бронирования и интерактивная карта столов
-          ресторана.
-        </p>
-      </div>
-    </div>
+    </header>
   );
-}
-
-// Компонент проверки авторизации
-function ProtectedRoute({ children }) {
-  const token = localStorage.getItem("access_token");
-  if (!token) {
-    return <Navigate to="/staff/login" replace />;
-  }
-  return children;
 }
 
 export default function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-        {/* Шапка сайта */}
-        <header className="bg-white shadow-sm px-8 py-4 flex justify-between items-center sticky top-0 z-50">
-          <Link
-            to="/"
-            className="text-xl font-bold tracking-widest text-amber-600"
-          >
-            MAISON
-          </Link>
-          <nav className="space-x-8 font-medium text-sm">
-            <Link to="/" className="hover:text-amber-600 transition">
-              Главная
-            </Link>
-            <Link to="/booking" className="hover:text-amber-600 transition">
-              Бронирование
-            </Link>
-            <Link
-              to="/staff/login"
-              className="hover:text-amber-600 transition text-amber-700"
-            >
-              Вход для персонала
-            </Link>
-          </nav>
-        </header>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route
+          path="/booking"
+          element={
+            <>
+              <Header />
+              <PublicBooking />
+            </>
+          }
+        />
+        <Route path="/staff/login" element={<StaffLogin />} />
+        <Route path="/staff/dashboard" element={<StaffDashboardRedirect />} />
 
-        {/* Навигация по страницам */}
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/booking" element={<PublicBooking />} />
-            <Route path="/staff/login" element={<StaffLogin />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <StaffDashboard />
-                </ProtectedRoute>
-              }
-            />
-            {/* Редирект для несуществующих путей */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-      </div>
+        <Route
+          path="/admin/dashboard"
+          element={
+            <RequireStaffRole allowedRoles={["owner", "administrator"]}>
+              <AdminOverview />
+            </RequireStaffRole>
+          }
+        />
+        <Route
+          path="/admin/bookings"
+          element={
+            <RequireStaffRole
+              allowedRoles={["owner", "administrator", "waiter"]}
+            >
+              <AdminBookings />
+            </RequireStaffRole>
+          }
+        />
+        <Route
+          path="/admin/hall"
+          element={
+            <RequireStaffRole
+              allowedRoles={["owner", "administrator", "waiter"]}
+            >
+              <AdminHallPlan />
+            </RequireStaffRole>
+          }
+        />
+        <Route
+          path="/admin/orders"
+          element={
+            <RequireStaffRole
+              allowedRoles={["owner", "administrator", "waiter"]}
+            >
+              <AdminOrders />
+            </RequireStaffRole>
+          }
+        />
+        <Route
+          path="/staff/kitchen"
+          element={
+            <RequireStaffRole allowedRoles={["owner", "administrator", "chef"]}>
+              <KitchenQueue />
+            </RequireStaffRole>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </Router>
   );
 }
