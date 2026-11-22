@@ -1,0 +1,127 @@
+.footer {
+    width: 100%;
+    background: #0d1914;
+    color: #a5aaa3;
+    padding: 75px 5.2% 30px;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+.footer-container {
+    display: grid;
+    grid-template-columns: 1.5fr 0.75fr 1fr 0.9fr;
+    gap: 50px;
+    padding-bottom: 65px;
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 17px;
+}
+
+.footer-column h3 {
+    color: #b8aa83;
+    font-family: Georgia, serif;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+.footer-subtitle {
+    color: #d0d0c7;
+    font-size: 9px;
+    letter-spacing: 4px;
+    margin-top: -7px;
+}
+
+.footer-column h4 {
+    color: #b8aa83;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    margin: 5px 0 10px;
+}
+
+.footer-column p,
+.footer-column a {
+    color: #a5aaa3;
+    font-size: 13px;
+    text-decoration: none;
+    margin: 0;
+    transition: 0.3s;
+}
+
+.footer-column a:hover {
+    color: #d1bd91;
+}
+
+.footer-booking .booking-link {
+    color: #f1f1eb;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 13px;
+    border-bottom: 1px solid #8c8269;
+}
+
+.booking-link span {
+    font-size: 21px;
+    transition: 0.3s;
+}
+
+.booking-link:hover span {
+    transform: translate(4px, -4px);
+}
+
+.footer-bottom {
+    border-top: 1px solid #29342e;
+    padding-top: 27px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-bottom p {
+    color: #777f77;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    margin: 0;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+    .footer {
+        padding: 50px 25px 25px;
+    }
+
+    .footer-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 40px 25px;
+        padding-bottom: 45px;
+    }
+
+    .footer-bottom {
+        gap: 15px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 35px;
+    }
+
+    .footer-bottom p {
+        font-size: 8px;
+    }
+}

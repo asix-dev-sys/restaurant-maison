@@ -1,0 +1,84 @@
+.cart-btn {
+    padding: 12px 20px;
+    background: #22a565;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Затемнение фона */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+    z-index: 99;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Выдвижная корзина */
+.cart-drawer {
+    position: fixed;
+    top: 0;
+    right: -450px;
+    width: 400px;
+    max-width: 90%;
+    height: 100vh;
+    background: white;
+    z-index: 100;
+    padding: 25px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.4s ease;
+}
+
+.cart-drawer.active {
+    right: 0;
+}
+
+/* Шапка */
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 15px;
+}
+
+.cart-header button {
+    border: none;
+    background: none;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+/* Содержимое */
+.cart-content {
+    flex: 1;
+    padding-top: 20px;
+    overflow-y: auto;
+}
+
+/* Нижняя часть */
+.cart-footer {
+    border-top: 1px solid #ddd;
+    padding-top: 15px;
+}
+
+.checkout-btn {
+    width: 100%;
+    padding: 15px;
+    background: #22a565;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
